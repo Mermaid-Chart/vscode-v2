@@ -1,23 +1,132 @@
 {
-  "name": "vscode-mermaid-chart-v2",
-  "displayName": "vscode-mermaid-chart-v2",
-  "description": "",
-  "version": "0.0.1",
+  "name": "vscode-mermaid-chart",
+  "publisher": "MermaidChart",
+  "displayName": "Mermaid Chart",
+  "description": "The Mermaid Chart extension for Visual Studio Code enables developers to view and edit diagrams stored in Mermaid charts within the Visual Studio Code. With integration to the Mermaid Chart service, this extension allows users to attach diagrams to their code. Gain quick access to edit diagrams.",
+  "version": "2.0.0",
   "engines": {
     "vscode": "^1.92.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
   ],
+  "keywords": [
+    "mermaid",
+    "diagram",
+    "mermaid chart",
+    "visio",
+    "flowchart",
+    "sequence diagram",
+    "gantt",
+    "pie chart",
+    "class diagram",
+    "state diagram",
+    "entity relationship diagram",
+    "user journey diagram",
+    "user journey",
+    "journey",
+    "pie",
+    "sequence",
+    "flow",
+    "flow chart",
+    "gantt chart",
+    "architecture",
+    "uml"
+  ],
+  "capabilities": {
+    "authentication": [
+      "mermaidChartAuthProvider"
+    ]
+  },
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mermaidChart",
+          "title": "Mermaid Chart",
+          "icon": "resources/icons/mermaid-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "mermaidChart": [
+        {
+          "type": "webview",
+          "id": "new-diagram",
+          "name": "New Diagram"
+        },
+        {
+          "type": "tree",
+          "id": "package-diagrams",
+          "name": "Diagrams"
+        },
+        {
+          "type": "tree",
+          "id": "package-assistant",
+          "name": "Mermaid AI"
+        },
+        {
+          "type": "tree",
+          "id": "package-snippets",
+          "name": "Samples/Code Snippets"
+        },
+        {
+          "type": "tree",
+          "id": "package-help",
+          "name": "Syntax Help"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "vscode-mermaid-chart-v2.helloWorld",
-        "title": "Hello World"
+        "command": "extension.createMermaidChart",
+        "title": "Create Diagram",
+        "icon": "$(file-add)"
+      },
+      {
+        "command": "mermaidChart.insertUuidIntoEditor",
+        "title": "Insert Diagram",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "mermaidChart.editDiagram",
+        "title": "Edit Diagram",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "mermaidChart.deleteDiagram",
+        "title": "Delete Diagram",
+        "icon": "$(trash)"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "extension.createMermaidChart",
+          "group": "navigation",
+          "when": "view == package-diagrams"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "mermaidChart.insertUuidIntoEditor",
+          "group": "inline",
+          "when": "viewItem == nonExpandableItem"
+        },
+        {
+          "command": "mermaidChart.editDiagram",
+          "group": "inline",
+          "when": "viewItem == nonExpandableItem"
+        },
+        {
+          "command": "mermaidChart.deleteDiagram",
+          "group": "inline",
+          "when": "viewItem == nonExpandableItem"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,14 +137,19 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.92.0",
     "@types/mocha": "^10.0.7",
     "@types/node": "20.x",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.92.0",
     "@typescript-eslint/eslint-plugin": "^7.14.1",
     "@typescript-eslint/parser": "^7.11.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.4.5",
     "@vscode/test-cli": "^0.0.9",
-    "@vscode/test-electron": "^2.4.0"
+    "@vscode/test-electron": "^2.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "axios": "^1.7.5",
+    "uuid": "^10.0.0"
   }
 }

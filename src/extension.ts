@@ -1,25 +1,256 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { MermaidChartProvider, MCTreeItem } from './mermaidChartProvider';
+import { MermaidChartVSCode } from './mermaidChartVSCode';
+import {
+  applyMermaidChartTokenHighlighting,
+  editMermaidChart,
+  findComments,
+  findMermaidChartTokens,
+  insertMermaidChartToken,
+  viewMermaidChart,
+  createMermaidChart,
+} from './util';
+import { MermaidChartCodeLensProvider } from './mermaidChartCodeLensProvider';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
+  console.log('Activating Mermaid Chart extension');
+  const mcAPI = new MermaidChartVSCode();
+  await mcAPI.initialize(context);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "vscode-mermaid-chart-v2" is now active!');
+  const mermaidChartProvider: MermaidChartProvider = new MermaidChartProvider(
+    mcAPI,
+  );
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('vscode-mermaid-chart-v2.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from vscode-mermaid-chart-v2!');
-	});
+  const mermaidChartTokenDecoration =
+    vscode.window.createTextEditorDecorationType({
+      backgroundColor: 'rgba(255, 71, 123, 0.3)', // Adjust the background color as desired
+      color: 'rgb(255, 255, 255)', // Adjust the text color as desired
+      gutterIconPath: vscode.Uri.file(
+        context.asAbsolutePath('resources/icons/mermaid-icon-16.png'),
+      ), // Add the icon file path
+      gutterIconSize: '8x8', // Adjust the icon size as desired
+    });
+  let codeLensProvider: MermaidChartCodeLensProvider | undefined;
 
-	context.subscriptions.push(disposable);
+  function updateMermaidChartTokenHighlighting() {
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+      const comments = findComments(activeEditor.document);
+      const mermaidChartTokens = findMermaidChartTokens(
+        activeEditor.document,
+        comments,
+      );
+      applyMermaidChartTokenHighlighting(
+        activeEditor,
+        mermaidChartTokens,
+        mermaidChartTokenDecoration,
+      );
+
+      if (!codeLensProvider) {
+        codeLensProvider = new MermaidChartCodeLensProvider(mermaidChartTokens);
+        context.subscriptions.push(
+          vscode.languages.registerCodeLensProvider('*', codeLensProvider),
+        );
+      } else {
+        codeLensProvider.setMermaidChartTokens(mermaidChartTokens);
+      }
+    }
+  }
+
+  updateMermaidChartTokenHighlighting();
+
+  vscode.window.onDidChangeActiveTextEditor(
+    () => {
+      updateMermaidChartTokenHighlighting();
+    },
+    null,
+    context.subscriptions,
+  );
+
+  vscode.workspace.onDidChangeTextDocument(
+    () => {
+      updateMermaidChartTokenHighlighting();
+    },
+    null,
+    context.subscriptions,
+  );
+
+  const viewCommandDisposable = vscode.commands.registerCommand(
+    'extension.viewMermaidChart',
+    (uuid: string) => {
+      return viewMermaidChart(mcAPI, uuid);
+    },
+  );
+
+  context.subscriptions.push(viewCommandDisposable);
+
+  const createCommandDisposable = vscode.commands.registerCommand(
+    'extension.createMermaidChart',
+    (uuid: string) => {
+      return createMermaidChart(mcAPI);
+    },
+  );
+
+  context.subscriptions.push(createCommandDisposable);
+
+  const treeView = vscode.window.createTreeView('package-diagrams', {
+    treeDataProvider: mermaidChartProvider,
+  });
+
+  vscode.window.registerTreeDataProvider(
+    'package-diagrams',
+    mermaidChartProvider,
+  );
+
+  const editCommandDisposable = vscode.commands.registerCommand(
+    'extension.editMermaidChart',
+    (uuid: string) => {
+      return editMermaidChart(mcAPI, uuid, mermaidChartProvider);
+    },
+  );
+  context.subscriptions.push(editCommandDisposable);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('mermaidChart.editDiagram', () => {
+      vscode.window.showInformationMessage('Edit Diagram command executed');
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('mermaidChart.deleteDiagram', () => {
+      vscode.window.showInformationMessage('Delete Diagram command executed');
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('package-diagrams.focus', () => {
+      const emptyMermaidChartToken: MCTreeItem = {
+        uuid: '',
+        title: '',
+        range: new vscode.Range(0, 0, 0, 0),
+      };
+      treeView.reveal(emptyMermaidChartToken, {
+        select: false,
+        focus: true,
+        expand: false,
+      });
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('package-diagrams.refresh', () => {
+      mermaidChartProvider.refresh();
+    }),
+  );
+
+  let disposable = vscode.commands.registerCommand(
+    'package-diagrams.outline',
+    () => {
+      vscode.window.registerTreeDataProvider(
+        'package-diagrams',
+        mermaidChartProvider,
+      );
+    },
+  );
+  context.subscriptions.push(disposable);
+
+  const insertUuidIntoEditorDisposable = vscode.commands.registerCommand(
+    'package-diagrams.insertUuidIntoEditor',
+    (uuid: string) => {
+      return insertMermaidChartToken(uuid, mermaidChartProvider);
+    },
+  );
+  context.subscriptions.push(insertUuidIntoEditorDisposable);
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('extension.refreshTreeView', () => {
+      mermaidChartProvider.refresh();
+    }),
+  );
+
+  const provider = new NewDiagramViewProvider(context.extensionUri);
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      NewDiagramViewProvider.viewType,
+      provider,
+    ),
+  );
+
+  mermaidChartProvider.refresh();
+  // Add a console.log() statement to ensure the view is registered
+  console.log('Mermaid Charts view registered');
+}
+
+class NewDiagramViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'new-diagram';
+
+  private _view?: vscode.WebviewView;
+
+  constructor(private readonly _extensionUri: vscode.Uri) {}
+
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    _context: vscode.WebviewViewResolveContext,
+    _token: vscode.CancellationToken,
+  ) {
+    this._view = webviewView;
+
+    webviewView.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [this._extensionUri],
+    };
+
+    webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+
+    webviewView.webview.onDidReceiveMessage((data) => {
+      switch (data.type) {
+        case 'createNewDiagram':
+          // vscode.window.showInformationMessage('Creating new diagram!');
+          vscode.commands.executeCommand('extension.createMermaidChart');
+          break;
+      }
+    });
+  }
+
+  private _getHtmlForWebview(webview: vscode.Webview) {
+    return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>New Diagram</title>
+        <style>
+          body {
+            padding: 10px;
+          }
+          button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border: none;
+            cursor: pointer;
+          }
+          button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+          }
+        </style>
+      </head>
+      <body>
+        <button id="createNewDiagramButton">New Diagram</button>
+        
+        <script>
+          const vscode = acquireVsCodeApi();
+          document.getElementById('createNewDiagramButton').addEventListener('click', () => {
+            vscode.postMessage({ type: 'createNewDiagram' });
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  }
 }
 
 // This method is called when your extension is deactivated
