@@ -46,7 +46,7 @@
         {
           "id": "mermaidChart",
           "title": "Mermaid Chart",
-          "icon": "resources/icons/mermaid-icon.svg"
+          "icon": "resources/icons/mc-icon-white-outline.svg"
         }
       ]
     },

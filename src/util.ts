@@ -279,7 +279,7 @@ export async function createMermaidChart(_mcAPI: MermaidChartVSCode) {
           </div>
           <button>Save</button>
         </div>
-        <iframe src="https://www.google.com/webhp?igu=1" title="Google"></iframe>
+        <iframe src="about:blank" />
         <script>
             const editor = document.getElementById('editor');
             const lineNumbers = document.getElementById('line-numbers');
