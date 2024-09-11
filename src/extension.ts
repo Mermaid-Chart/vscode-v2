@@ -11,6 +11,7 @@ import {
 } from './util';
 import { MermaidChartCodeLensProvider } from './mermaidChartCodeLensProvider';
 import { CreateDiagramPanel } from './panels/CreateDiagramPanel';
+import { deleteConfirmationModal } from './panels/DeleteConfirmationModal';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('Activating Mermaid Chart extension');
@@ -164,9 +165,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mermaidChart.deleteDiagram', () => {
-      vscode.window.showInformationMessage('Delete Diagram command executed');
-    }),
+    vscode.commands.registerCommand(
+      'mermaidChart.deleteDiagram',
+      async (document) => {
+        await deleteConfirmationModal(mcAPI, document.uuid, document.title);
+        vscode.window.showInformationMessage('Delete Diagram command executed');
+      },
+    ),
   );
 
   context.subscriptions.push(

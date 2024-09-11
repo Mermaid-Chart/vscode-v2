@@ -232,9 +232,7 @@ export class MermaidChart {
     return document.data;
   }
 
-  public async createDiagram(
-    projectID: string = '1ad8729f-9382-445f-a93b-a28ab6365822',
-  ) {
+  public async createDiagram(projectID: string) {
     try {
       const document = await this.axios.post<MCDocument>(
         this.URLS.rest.projects.get(projectID).documents,
@@ -256,6 +254,10 @@ export class MermaidChart {
       this.URLS.rest.documents.get(document.documentID),
       document,
     );
+  }
+
+  public async deleteDiagram(documentID: string) {
+    await this.axios.delete(this.URLS.rest.documents.get(documentID));
   }
 
   public async getEditURL(document: Pick<MCDocument, 'documentID'>) {
