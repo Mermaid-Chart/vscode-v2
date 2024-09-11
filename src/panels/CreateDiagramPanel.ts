@@ -134,7 +134,7 @@ export class CreateDiagramPanel {
 
     try {
       await this._mcAPI.updateDiagram(updatedDiagram);
-      await commands.executeCommand('extension.refreshTreeView');
+      await commands.executeCommand('package-diagrams.refresh');
       const document = await this._mcAPI.getDocument(this._diagram.documentID);
       // const svgContent = await this.getDiagramRawData();
       // await this._panel.webview.postMessage({

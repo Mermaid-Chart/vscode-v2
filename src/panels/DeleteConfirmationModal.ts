@@ -15,11 +15,13 @@ export async function deleteConfirmationModal(
   if (selection === 'Yes') {
     try {
       await mcAPI.deleteDiagram(uuid);
-      await vscode.commands.executeCommand('extension.refreshTreeView');
+      await vscode.commands.executeCommand('package-diagrams.refresh');
       await vscode.window.showInformationMessage('Item deleted successfully.');
     } catch (error) {
       console.log(error);
-      vscode.window.showErrorMessage('Failed to delete item, please try again');
+      await vscode.window.showErrorMessage(
+        'Failed to delete item, please try again',
+      );
     }
   }
 }

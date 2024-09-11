@@ -1,4 +1,4 @@
-import { Disposable, Event, EventEmitter, authentication } from 'vscode';
+import { Disposable, Event, EventEmitter } from 'vscode';
 import { createHash } from 'crypto';
 import * as vscode from 'vscode';
 import { MermaidChartVSCode } from './mermaidChartVSCode';
@@ -6,6 +6,7 @@ import {
   MermaidChartProvider,
   ITEM_TYPE_DOCUMENT,
 } from './mermaidChartProvider';
+import { CreateDiagramPanel } from './panels/CreateDiagramPanel';
 
 export interface PromiseAdapter<T, U> {
   (
@@ -197,54 +198,45 @@ export async function viewMermaidChart(
 }
 
 export async function createMermaidChart(
-  _mcAPI: MermaidChartVSCode,
+  mcAPI: MermaidChartVSCode,
   context: vscode.ExtensionContext,
 ) {
-  const panel = vscode.window.createWebviewPanel(
-    'mermaidChartView',
-    'New Mermaid Chart',
-    vscode.ViewColumn.One,
-    {
-      enableScripts: true, // Enable JavaScript in the webview
-    },
-  );
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Creating diagram...',
+        cancellable: false,
+      },
+      async () => {
+        const projects = await mcAPI.getProjects();
+        const projectID = projects[0].id;
+        const newDiagram = await mcAPI.createDiagram(projectID);
 
-  let cssUrl = panel.webview.asWebviewUri(
-    vscode.Uri.joinPath(
-      context.extensionUri,
-      'web',
-      'dist',
-      'create-diagram',
-      'index.css',
-    ),
-  );
+        if (newDiagram?.documentID) {
+          const diagram = await mcAPI.getDocument(newDiagram.documentID);
+          const svgContent = await mcAPI.getRawDocument(newDiagram, 'dark');
 
-  let scriptSrc = panel.webview.asWebviewUri(
-    vscode.Uri.joinPath(
-      context.extensionUri,
-      'web',
-      'dist',
-      'create-diagram',
-      'index.js',
-    ),
-  );
+          CreateDiagramPanel.render(
+            context.extensionUri,
+            diagram,
+            svgContent,
+            mcAPI,
+          );
 
-  panel.webview.html = `
-    <!DOCTYPE html>
-    <html lang="en" style="height: 100%;">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link href="${cssUrl}" rel="stylesheet">
-    </head>
-    <body style="height: 100%; margin: 0; padding: 0; overflow: hidden;">
-      <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
-        <div id="root"></div>
-        <script src="${scriptSrc}"></script>
-      </body>
-    </body>
-    </html>`;
+          await vscode.commands.executeCommand('package-diagrams.refresh');
+        } else {
+          throw new Error('Failed to create diagram');
+        }
+      },
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to create Mermaid Chart: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
 }
 
 export async function editMermaidChart(
