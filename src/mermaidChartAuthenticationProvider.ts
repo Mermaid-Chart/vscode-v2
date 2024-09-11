@@ -63,9 +63,7 @@ export class MermaidChartAuthenticationProvider
    * @param scopes
    * @returns
    */
-  public async getSessions(
-    scopes?: string[],
-  ): Promise<readonly AuthenticationSession[]> {
+  public async getSessions(): Promise<AuthenticationSession[]> {
     // return [];
     const allSessions = await this.context.secrets.get(this.sessionsKey);
 

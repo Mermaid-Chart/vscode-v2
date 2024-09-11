@@ -2,6 +2,7 @@
 import { v4 as uuid } from 'uuid';
 import defaultAxios, { AxiosInstance } from 'axios';
 import { createHash } from 'crypto';
+import vscode from 'vscode';
 
 const defaultBaseURL = 'https://www.mermaidchart.com'; // "http://127.0.0.1:5174"
 const authorizationURLTimeout = 60_000;
@@ -37,11 +38,15 @@ export interface MCProject {
 }
 
 export interface MCDocument {
+  svgCodeDark?: string | null;
+  svgCode?: string | null;
+  id: string;
   documentID: string;
   projectID: string;
   major: string;
   minor: string;
   title: string;
+  code: string;
 }
 
 export interface AuthorizationData {
@@ -85,6 +90,11 @@ export class MermaidChart {
         this.resetAccessToken();
       }
       return res;
+    });
+
+    this.axios.interceptors.request.use((config) => {
+      console.log('Request URL:', config.url);
+      return config;
     });
   }
 
@@ -213,6 +223,39 @@ export class MermaidChart {
       this.URLS.rest.projects.get(projectID).documents,
     );
     return projects.data;
+  }
+
+  public async getDocument(documentID: string) {
+    const document = await this.axios.get<MCDocument>(
+      this.URLS.rest.documents.get(documentID),
+    );
+    return document.data;
+  }
+
+  public async createDiagram(
+    projectID: string = '1ad8729f-9382-445f-a93b-a28ab6365822',
+  ) {
+    try {
+      const document = await this.axios.post<MCDocument>(
+        this.URLS.rest.projects.get(projectID).documents,
+        {
+          title: 'Untitled diagram',
+        },
+      );
+      return document.data;
+    } catch (error) {
+      console.log(error);
+      vscode.window.showErrorMessage(
+        'Failed to create diagram, please try again',
+      );
+    }
+  }
+
+  public async updateDiagram(document: MCDocument) {
+    await this.axios.put(
+      this.URLS.rest.documents.get(document.documentID),
+      document,
+    );
   }
 
   public async getEditURL(document: Pick<MCDocument, 'documentID'>) {

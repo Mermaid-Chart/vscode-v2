@@ -8,9 +8,9 @@ import {
   findMermaidChartTokens,
   insertMermaidChartToken,
   viewMermaidChart,
-  createMermaidChart,
 } from './util';
 import { MermaidChartCodeLensProvider } from './mermaidChartCodeLensProvider';
+import { CreateDiagramPanel } from './panels/CreateDiagramPanel';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('Activating Mermaid Chart extension');
@@ -84,14 +84,61 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(viewCommandDisposable);
 
-  const createCommandDisposable = vscode.commands.registerCommand(
+  // const createCommandDisposable = vscode.commands.registerCommand(
+  //   'extension.createMermaidChart',
+  //   () => createMermaidChart(mcAPI, context),
+  // );
+
+  // context.subscriptions.push(createCommandDisposable);
+
+  // Create the show hello world command
+  const showHelloWorldCommand = vscode.commands.registerCommand(
     'extension.createMermaidChart',
-    (uuid: string) => {
-      return createMermaidChart(mcAPI);
+    async () => {
+      try {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: 'Creating Mermaid Chart',
+            cancellable: false,
+          },
+          async (progress) => {
+            progress.report({ message: 'Creating diagram...' });
+            const projects = await mcAPI.getProjects();
+            const projectID = projects[0].id;
+            const document = await mcAPI.createDiagram(projectID);
+
+            if (document?.documentID) {
+              const diagram = await mcAPI.getDocument(document.documentID);
+              const svgContent = await mcAPI.getRawDocument(document, 'dark');
+
+              console.log('diagram', diagram);
+
+              CreateDiagramPanel.render(
+                context.extensionUri,
+                diagram,
+                svgContent,
+                mcAPI,
+              );
+
+              await vscode.commands.executeCommand('extension.refreshTreeView');
+            } else {
+              throw new Error('Failed to create diagram');
+            }
+          },
+        );
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to create Mermaid Chart: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`,
+        );
+      }
     },
   );
 
-  context.subscriptions.push(createCommandDisposable);
+  // Add command to the extension context
+  context.subscriptions.push(showHelloWorldCommand);
 
   const treeView = vscode.window.createTreeView('package-diagrams', {
     treeDataProvider: mermaidChartProvider,
@@ -206,7 +253,6 @@ class NewDiagramViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage((data) => {
       switch (data.type) {
         case 'createNewDiagram':
-          // vscode.window.showInformationMessage('Creating new diagram!');
           vscode.commands.executeCommand('extension.createMermaidChart');
           break;
       }

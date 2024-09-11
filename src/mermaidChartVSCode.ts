@@ -1,6 +1,6 @@
-import * as vscode from "vscode";
-import { MermaidChart } from "./mermaidAPI";
-import { MermaidChartAuthenticationProvider } from "./mermaidChartAuthenticationProvider";
+import * as vscode from 'vscode';
+import { MermaidChart } from './mermaidAPI';
+import { MermaidChartAuthenticationProvider } from './mermaidChartAuthenticationProvider';
 
 export class MermaidChartVSCode extends MermaidChart {
   constructor() {
@@ -26,8 +26,8 @@ export class MermaidChartVSCode extends MermaidChart {
       vscode.authentication.registerAuthenticationProvider(
         MermaidChartAuthenticationProvider.id,
         MermaidChartAuthenticationProvider.providerName,
-        new MermaidChartAuthenticationProvider(this, context)
-      )
+        new MermaidChartAuthenticationProvider(this, context),
+      ),
     );
 
     /**
@@ -38,14 +38,14 @@ export class MermaidChartVSCode extends MermaidChart {
         if (e.provider.id === MermaidChartAuthenticationProvider.id) {
           await this.setupAPI();
         }
-      })
+      }),
     );
 
     /**
      * When the configuration is changed, we need to refresh the base URL.
      */
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration("mermaidChart.baseUrl")) {
+      if (event.affectsConfiguration('mermaidChart.baseUrl')) {
         this.refreshBaseURL();
       }
     });
@@ -57,7 +57,7 @@ export class MermaidChartVSCode extends MermaidChart {
       [],
       {
         createIfNone: true,
-      }
+      },
     );
     this.setAccessToken(session.accessToken);
   }
@@ -68,17 +68,17 @@ export class MermaidChartVSCode extends MermaidChart {
   }
 }
 
-const defaultBaseURL = "https://www.mermaidchart.com";
+const defaultBaseURL = 'https://www.mermaidchart.com';
 
 export function getBaseUrl(): string | undefined {
-  const config = vscode.workspace.getConfiguration("mermaidChart");
-  const baseURL = config.get<string>("baseUrl");
+  const config = vscode.workspace.getConfiguration('mermaidChart');
+  const baseURL = config.get<string>('baseUrl');
 
   if (baseURL) {
     return baseURL;
   }
 
   // If baseURL was not set, set it to default
-  config.update("baseUrl", defaultBaseURL, true);
+  config.update('baseUrl', defaultBaseURL, true);
   return defaultBaseURL;
 }

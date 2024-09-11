@@ -129,6 +129,9 @@
     }
   },
   "scripts": {
+    "install:all": "npm install && cd web && npm install",
+    "start:webview": "cd web && npm run start",
+    "build:webview": "cd web && npm run build",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",

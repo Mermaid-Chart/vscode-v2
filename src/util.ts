@@ -179,6 +179,7 @@ export async function viewMermaidChart(
     },
     themeParameter,
   );
+  console.log('uuid', uuid, svgContent);
 
   panel.webview.html = `
     <!DOCTYPE html>
@@ -195,106 +196,53 @@ export async function viewMermaidChart(
     </html>`;
 }
 
-export async function createMermaidChart(_mcAPI: MermaidChartVSCode) {
+export async function createMermaidChart(
+  _mcAPI: MermaidChartVSCode,
+  context: vscode.ExtensionContext,
+) {
   const panel = vscode.window.createWebviewPanel(
     'mermaidChartView',
-    `New Mermaid Chart`,
+    'New Mermaid Chart',
     vscode.ViewColumn.One,
-    {},
+    {
+      enableScripts: true, // Enable JavaScript in the webview
+    },
   );
 
-  // const isDarkTheme =
-  //   vscode.window.activeColorTheme.kind === vscode.ColorThemeKind.Dark;
-  // const themeParameter = isDarkTheme ? 'dark' : 'light';
+  let cssUrl = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(
+      context.extensionUri,
+      'web',
+      'dist',
+      'create-diagram',
+      'index.css',
+    ),
+  );
+
+  let scriptSrc = panel.webview.asWebviewUri(
+    vscode.Uri.joinPath(
+      context.extensionUri,
+      'web',
+      'dist',
+      'create-diagram',
+      'index.js',
+    ),
+  );
 
   panel.webview.html = `
     <!DOCTYPE html>
     <html lang="en" style="height: 100%;">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-          body {
-            display: flex;
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-          }
-          iframe {
-            flex: 1;
-          }
-          .textarea-container {
-            flex: 0 0 50%;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            height: 100%;
-            border: none;
-          }
-          textarea {
-            width: 100%;
-            resize: none;
-            padding: 10px;
-            box-sizing: border-box;
-            font-family: var(--vscode-editor-font-family);
-            font-size: var(--vscode-editor-font-size);
-            color: var(--vscode-editor-foreground);
-            background-color: var(--vscode-editor-background);
-            border: 1px solid var(--vscode-editorWidget-border);
-          }
-          button {
-            padding: 10px;
-            font-size: var(--vscode-font-size);
-            font-family: var(--vscode-font-family);
-            color: var(--vscode-button-foreground);
-            background-color: var(--vscode-button-background);
-            border: none;
-            cursor: pointer;
-          }
-          button:hover {
-            background-color: var(--vscode-button-hoverBackground);
-          }
-          .line-numbers {
-              padding: 10px;
-              background-color: #333;
-              color: #fff;
-              text-align: right;
-              font-family: monospace;
-              font-size: 14px;
-              line-height: 1.5;
-          }
-          .container {
-              display: flex;
-              width: 100%;
-          }
-        </style>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="${cssUrl}" rel="stylesheet">
     </head>
-    <body>
-        <div class="textarea-container">
-          <div class="container">
-            <div class="line-numbers" class="line-numbers"></div>
-            <textarea class="editor" spellcheck="false" rows="20"></textarea>
-          </div>
-          <button>Save</button>
-        </div>
-        <iframe src="about:blank" />
-        <script>
-            const editor = document.getElementById('editor');
-            const lineNumbers = document.getElementById('line-numbers');
-            
-            function updateLineNumbers() {
-                const lines = editor.value.split('\\n').length;
-                lineNumbers.innerHTML = '';
-                for (let i = 1; i <= lines; i++) {
-                    lineNumbers.innerHTML += i + '<br>';
-                }
-            }
-
-            editor.addEventListener('input', updateLineNumbers);
-            updateLineNumbers();
-        </script>
+    <body style="height: 100%; margin: 0; padding: 0; overflow: hidden;">
+      <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"></div>
+        <script src="${scriptSrc}"></script>
+      </body>
     </body>
     </html>`;
 }
