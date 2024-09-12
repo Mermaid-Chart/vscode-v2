@@ -7,6 +7,7 @@ import {
   ITEM_TYPE_DOCUMENT,
 } from './mermaidChartProvider';
 import { CreateDiagramPanel } from './panels/CreateDiagramPanel';
+import { UpdateDiagramPanel } from './panels/UpdateDiagramPanel';
 
 export interface PromiseAdapter<T, U> {
   (
@@ -226,6 +227,36 @@ export async function createMermaidChart(
 
           await vscode.commands.executeCommand('package-diagrams.refresh');
         } else {
+          throw new Error('Failed to create diagram');
+        }
+      },
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to create Mermaid Chart: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+}
+
+export async function updateMermaidChart(
+  mcAPI: MermaidChartVSCode,
+  context: vscode.ExtensionContext,
+  uuid: string,
+) {
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Loading diagram...',
+        cancellable: false,
+      },
+      async () => {
+        try {
+          const diagram = await mcAPI.getDocument(uuid);
+          UpdateDiagramPanel.render(context.extensionUri, diagram, mcAPI);
+        } catch (error) {
           throw new Error('Failed to create diagram');
         }
       },

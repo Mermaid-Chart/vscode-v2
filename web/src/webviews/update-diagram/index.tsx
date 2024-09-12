@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import TestDiagram from './test-diagram';
+import UpdateDiagram from './update-diagram';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
@@ -8,6 +8,6 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <TestDiagram />
+    <UpdateDiagram />
   </React.StrictMode>,
 );

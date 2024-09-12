@@ -8,6 +8,7 @@ import {
   findComments,
   findMermaidChartTokens,
   insertMermaidChartToken,
+  updateMermaidChart,
   viewMermaidChart,
 } from './util';
 import { MermaidChartCodeLensProvider } from './mermaidChartCodeLensProvider';
@@ -106,9 +107,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('mermaidChart.editDiagram', () => {
-      vscode.window.showInformationMessage('Edit Diagram command executed');
-    }),
+    vscode.commands.registerCommand(
+      'mermaidChart.editDiagram',
+      async (document) =>
+        await updateMermaidChart(mcAPI, context, document.uuid),
+    ),
   );
 
   context.subscriptions.push(

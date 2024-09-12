@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sidebar {
+  flex: 0 0 auto;
+  width: 50%;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  height: 100%;
+  border: none;
+}
+
+.textAreaContainer {
+  display: flex;
+  width: 100%;
+}
+
+.textArea {
+  padding: 0.5rem; /* 2 * 0.25rem */
+}
+
+.button {
+  padding: 0.5rem; /* 2 * 0.25rem */
+}
+
+.iframe {
+  flex: 1 1 auto;
+  border: none;
+}

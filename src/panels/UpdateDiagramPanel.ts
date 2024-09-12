@@ -23,16 +23,15 @@ import { getImageDataURL } from '../util';
  * - Setting the HTML (and by proxy CSS/JavaScript) content of the webview panel
  * - Setting message listeners so data can be passed between the webview and extension
  */
-export class CreateDiagramPanel {
-  public static currentPanel: CreateDiagramPanel | undefined;
+export class UpdateDiagramPanel {
+  public static currentPanel: UpdateDiagramPanel | undefined;
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
   private _diagram: MCDocument;
   private _mcAPI: MermaidChartVSCode;
-  private diagramData: any;
 
   /**
-   * The CreateDiagramPanel class private constructor (called only from the render method).
+   * The UpdateDiagramPanel class private constructor (called only from the render method).
    *
    * @param panel A reference to the webview panel
    * @param extensionUri The URI of the directory containing the extension
@@ -41,7 +40,6 @@ export class CreateDiagramPanel {
     panel: WebviewPanel,
     extensionUri: Uri,
     diagram: MCDocument,
-    diagramData: any,
     mcAPI: MermaidChartVSCode,
   ) {
     this._panel = panel;
@@ -60,7 +58,6 @@ export class CreateDiagramPanel {
     this._setWebviewMessageListener(this._panel.webview);
     this._diagram = diagram;
     this._mcAPI = mcAPI;
-    this.diagramData = diagramData;
   }
 
   /**
@@ -72,17 +69,16 @@ export class CreateDiagramPanel {
   public static render(
     extensionUri: Uri,
     diagram: MCDocument,
-    diagramData: any,
     mcAPI: MermaidChartVSCode,
   ) {
-    if (CreateDiagramPanel.currentPanel) {
+    if (UpdateDiagramPanel.currentPanel) {
       // If the webview panel already exists reveal it
-      CreateDiagramPanel.currentPanel._panel.reveal(ViewColumn.One);
+      UpdateDiagramPanel.currentPanel._panel.reveal(ViewColumn.One);
     } else {
       // If a webview panel does not already exist create and show a new one
       const panel = window.createWebviewPanel(
         // Panel view type
-        'new-diagram',
+        'updated-diagram',
         // Panel title
         diagram.documentID,
         // The editor column the panel should be displayed in
@@ -94,41 +90,28 @@ export class CreateDiagramPanel {
           // Restrict the webview to only load resources from the `out` and `webview-ui/build` directories
           localResourceRoots: [
             Uri.joinPath(extensionUri, 'out'),
-            Uri.joinPath(extensionUri, 'web/dist/create-diagram'),
+            Uri.joinPath(extensionUri, 'web/dist/update-diagram'),
           ],
         },
       );
 
-      CreateDiagramPanel.currentPanel = new CreateDiagramPanel(
+      UpdateDiagramPanel.currentPanel = new UpdateDiagramPanel(
         panel,
         extensionUri,
         diagram,
-        diagramData,
         mcAPI,
       );
     }
   }
 
-  private async getDiagramRawData() {
-    try {
-      const svgContent = await this._mcAPI.getRawDocument(
-        this._diagram,
-        'dark',
-      );
-      return svgContent;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  private async updateDiagram(code: string) {
+  private async updateDiagram(code: string, title?: string) {
     const updatedDiagram: MCDocument = {
       id: this._diagram.id,
       documentID: this._diagram.documentID,
       projectID: this._diagram.projectID,
       major: this._diagram.major,
       minor: this._diagram.minor,
-      title: this._diagram.title,
+      title: title || this._diagram.title,
       code: code,
     };
 
@@ -136,16 +119,12 @@ export class CreateDiagramPanel {
       await this._mcAPI.updateDiagram(updatedDiagram);
       await commands.executeCommand('package-diagrams.refresh');
       const document = await this._mcAPI.getDocument(this._diagram.documentID);
-      // const svgContent = await this.getDiagramRawData();
-      // await this._panel.webview.postMessage({
-      //   command: 'diagramRawData',
-      //   data: JSON.stringify(getImageDataURL(svgContent!)),
-      // });
-      this._panel.webview.postMessage({
+      await this._panel.webview.postMessage({
         command: 'diagramData',
         data: JSON.stringify({
           code: document.code,
           diagramImage: getImageDataURL(document.svgCodeDark!),
+          title: document.title,
         }),
       });
       await window.showInformationMessage('Diagram updated');
@@ -159,7 +138,7 @@ export class CreateDiagramPanel {
    * Cleans up and disposes of webview resources when the webview panel is closed.
    */
   public dispose() {
-    CreateDiagramPanel.currentPanel = undefined;
+    UpdateDiagramPanel.currentPanel = undefined;
 
     // Dispose of the current webview panel
     this._panel.dispose();
@@ -189,14 +168,14 @@ export class CreateDiagramPanel {
     const stylesUri = getUri(webview, extensionUri, [
       'web',
       'dist',
-      'create-diagram',
+      'update-diagram',
       'index.css',
     ]);
     // The JS file from the React build output
     const scriptUri = getUri(webview, extensionUri, [
       'web',
       'dist',
-      'create-diagram',
+      'update-diagram',
       'index.js',
     ]);
 
@@ -228,22 +207,23 @@ export class CreateDiagramPanel {
    */
   private _setWebviewMessageListener(webview: Webview) {
     webview.onDidReceiveMessage(
-      (message: any) => {
+      async (message: any) => {
         const command = message.command;
 
         switch (command) {
           case 'getDiagramData':
-            this._panel.webview.postMessage({
+            await this._panel.webview.postMessage({
               command: 'diagramData',
               data: JSON.stringify({
                 code: this._diagram.code,
-                diagramImage: getImageDataURL(this.diagramData),
+                title: this._diagram.title,
+                diagramImage: getImageDataURL(this._diagram.svgCodeDark!),
               }),
             });
-            return;
+            break;
           case 'updateDiagram':
-            this.updateDiagram(message.data);
-            return;
+            await this.updateDiagram(message.data.code, message.data.title);
+            break;
           // Add more switch case statements here as more webview message commands
           // are created within the webview context (i.e. inside media/main.js)
         }
