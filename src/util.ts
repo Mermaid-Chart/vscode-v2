@@ -181,7 +181,6 @@ export async function viewMermaidChart(
     },
     themeParameter,
   );
-  console.log('uuid', uuid, svgContent);
 
   panel.webview.html = `
     <!DOCTYPE html>
@@ -282,10 +281,11 @@ export async function editMermaidChart(
 }
 
 export async function insertMermaidChartToken(
-  uuid: string,
+  document: MermaidChartToken,
   provider: MermaidChartProvider,
 ) {
   // If a project is selected from tree-view, no token shall be inserted
+  const uuid = document.uuid;
   const itemType = provider.getItemTypeFromUuid(uuid);
   if (itemType !== ITEM_TYPE_DOCUMENT) {
     return;

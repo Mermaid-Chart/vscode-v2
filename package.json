@@ -86,7 +86,7 @@
         "icon": "$(file-add)"
       },
       {
-        "command": "mermaidChart.insertUuidIntoEditor",
+        "command": "package-diagrams.insertUuidIntoEditor",
         "title": "Insert Diagram",
         "icon": "$(plus)"
       },
@@ -111,7 +111,7 @@
       ],
       "view/item/context": [
         {
-          "command": "mermaidChart.insertUuidIntoEditor",
+          "command": "package-diagrams.insertUuidIntoEditor",
           "group": "inline",
           "when": "viewItem == nonExpandableItem"
         },
