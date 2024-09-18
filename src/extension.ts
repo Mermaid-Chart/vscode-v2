@@ -13,7 +13,7 @@ import {
 } from './util';
 import { MermaidChartCodeLensProvider } from './mermaidChartCodeLensProvider';
 import { deleteConfirmationModal } from './panels/DeleteConfirmationModal';
-import { DiagramCreationViewProvider } from './views/DiagramCreationViewProvider';
+import { DiagramListView } from './views/DiagramListView';
 
 export async function activate(context: vscode.ExtensionContext) {
   console.log('Activating Mermaid Chart extension');
@@ -88,14 +88,14 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  const treeView = vscode.window.createTreeView('package-diagrams', {
-    treeDataProvider: mermaidChartProvider,
-  });
+  // const treeView = vscode.window.createTreeView('package-diagrams', {
+  //   treeDataProvider: mermaidChartProvider,
+  // });
 
-  vscode.window.registerTreeDataProvider(
-    'package-diagrams',
-    mermaidChartProvider,
-  );
+  // vscode.window.registerTreeDataProvider(
+  //   'package-diagrams',
+  //   mermaidChartProvider,
+  // );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -109,48 +109,48 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'mermaidChart.editDiagram',
-      async (document) =>
-        await updateMermaidChart(mcAPI, context, document.uuid),
+      async (uuid) => await updateMermaidChart(mcAPI, context, uuid),
     ),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
       'mermaidChart.deleteDiagram',
-      async (document) =>
-        await deleteConfirmationModal(mcAPI, document.uuid, document.title),
+      async (uuid, title) => {
+        await deleteConfirmationModal(mcAPI, uuid, title);
+      },
     ),
   );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('package-diagrams.focus', () => {
-      const emptyMermaidChartToken: MCTreeItem = {
-        uuid: '',
-        title: '',
-        range: new vscode.Range(0, 0, 0, 0),
-      };
-      treeView.reveal(emptyMermaidChartToken, {
-        select: false,
-        focus: true,
-        expand: false,
-      });
-    }),
-  );
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand('package-diagrams.focus', () => {
+  //     const emptyMermaidChartToken: MCTreeItem = {
+  //       uuid: '',
+  //       title: '',
+  //       range: new vscode.Range(0, 0, 0, 0),
+  //     };
+  //     treeView.reveal(emptyMermaidChartToken, {
+  //       select: false,
+  //       focus: true,
+  //       expand: false,
+  //     });
+  //   }),
+  // );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('package-diagrams.refresh', () => {
-      mermaidChartProvider.refresh();
-    }),
-  );
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand('package-diagrams.refresh', () => {
+  //     mermaidChartProvider.refresh();
+  //   }),
+  // );
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand('package-diagrams.outline', () => {
-      vscode.window.registerTreeDataProvider(
-        'package-diagrams',
-        mermaidChartProvider,
-      );
-    }),
-  );
+  // context.subscriptions.push(
+  //   vscode.commands.registerCommand('package-diagrams.outline', () => {
+  //     vscode.window.registerTreeDataProvider(
+  //       'package-diagrams',
+  //       mermaidChartProvider,
+  //     );
+  //   }),
+  // );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -161,13 +161,28 @@ export async function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  const provider = new DiagramCreationViewProvider(context.extensionUri);
+  // const provider = new DiagramCreationViewProvider(context.extensionUri);
+
+  // context.subscriptions.push(
+  //   vscode.window.registerWebviewViewProvider(
+  //     DiagramCreationViewProvider.viewType,
+  //     provider,
+  //   ),
+  // );
+
+  const provider = new DiagramListView(context.extensionUri, mcAPI);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
-      DiagramCreationViewProvider.viewType,
+      DiagramListView.viewType,
       provider,
     ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('mermaidChart.refreshDiagramList', () => {
+      provider.refresh();
+    }),
   );
 
   mermaidChartProvider.refresh();

@@ -134,9 +134,10 @@ export class CreateDiagramPanel {
 
     try {
       await this._mcAPI.updateDiagram(updatedDiagram);
-      await commands.executeCommand('package-diagrams.refresh');
+      // await commands.executeCommand('package-diagrams.refresh');
+      await commands.executeCommand('mermaidChart.refreshDiagramList');
       const document = await this._mcAPI.getDocument(this._diagram.documentID);
-      // const svgContent = await this.getDiagramRawData();
+      const svgContent = await this.getDiagramRawData();
       // await this._panel.webview.postMessage({
       //   command: 'diagramRawData',
       //   data: JSON.stringify(getImageDataURL(svgContent!)),
@@ -145,7 +146,7 @@ export class CreateDiagramPanel {
         command: 'diagramData',
         data: JSON.stringify({
           code: document.code,
-          diagramImage: getImageDataURL(document.svgCodeDark!),
+          diagramImage: getImageDataURL(svgContent!),
         }),
       });
       await window.showInformationMessage('Diagram updated');

@@ -54,12 +54,7 @@
       "mermaidChart": [
         {
           "type": "webview",
-          "id": "new-diagram",
-          "name": "New Diagram"
-        },
-        {
-          "type": "tree",
-          "id": "package-diagrams",
+          "id": "list-diagrams",
           "name": "Diagrams"
         },
         {
@@ -76,54 +71,6 @@
           "type": "tree",
           "id": "package-help",
           "name": "Syntax Help"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "extension.createMermaidChart",
-        "title": "Create Diagram",
-        "icon": "$(file-add)"
-      },
-      {
-        "command": "package-diagrams.insertUuidIntoEditor",
-        "title": "Insert Diagram",
-        "icon": "$(plus)"
-      },
-      {
-        "command": "mermaidChart.editDiagram",
-        "title": "Edit Diagram",
-        "icon": "$(edit)"
-      },
-      {
-        "command": "mermaidChart.deleteDiagram",
-        "title": "Delete Diagram",
-        "icon": "$(trash)"
-      }
-    ],
-    "menus": {
-      "view/title": [
-        {
-          "command": "extension.createMermaidChart",
-          "group": "navigation",
-          "when": "view == package-diagrams"
-        }
-      ],
-      "view/item/context": [
-        {
-          "command": "package-diagrams.insertUuidIntoEditor",
-          "group": "inline",
-          "when": "viewItem == nonExpandableItem"
-        },
-        {
-          "command": "mermaidChart.editDiagram",
-          "group": "inline",
-          "when": "viewItem == nonExpandableItem"
-        },
-        {
-          "command": "mermaidChart.deleteDiagram",
-          "group": "inline",
-          "when": "viewItem == nonExpandableItem"
         }
       ]
     }

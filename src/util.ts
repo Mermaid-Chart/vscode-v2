@@ -216,6 +216,7 @@ export async function createMermaidChart(
         if (newDiagram?.documentID) {
           const diagram = await mcAPI.getDocument(newDiagram.documentID);
           const svgContent = await mcAPI.getRawDocument(newDiagram, 'dark');
+          console.log('svgContent', svgContent);
 
           CreateDiagramPanel.render(
             context.extensionUri,
@@ -224,7 +225,10 @@ export async function createMermaidChart(
             mcAPI,
           );
 
-          await vscode.commands.executeCommand('package-diagrams.refresh');
+          // await vscode.commands.executeCommand('package-diagrams.refresh');
+          await vscode.commands.executeCommand(
+            'mermaidChart.refreshDiagramList',
+          );
         } else {
           throw new Error('Failed to create diagram');
         }

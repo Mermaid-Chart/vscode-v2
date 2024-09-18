@@ -1,0 +1,122 @@
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.projectContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.flexContainer {
+  display: flex;
+  gap: 5px;
+  cursor: pointer;
+  padding: 4px 0;
+  position: relative;
+}
+
+.flexContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+  background-color: var(--vscode-list-hoverBackground);
+  opacity: 0;
+  z-index: -1;
+}
+
+.flexContainer:hover::before {
+  opacity: 1;
+}
+
+.listContainer {
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  position: relative;
+}
+
+.listItem::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  right: -20px;
+  background-color: var(--vscode-list-hoverBackground);
+  opacity: 0;
+  z-index: -1;
+}
+
+.listItem:hover::before {
+  opacity: 1;
+}
+
+.listItem:hover {
+  color: var(--vscode-list-hoverForeground);
+}
+
+.listItem:hover .actionsContainer {
+  display: flex;
+}
+
+.listItem:focus {
+  outline: none;
+  background-color: var(--vscode-list-focusBackground);
+  color: var(--vscode-list-focusForeground);
+}
+
+.listItem:active {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+.listItemTitle {
+  padding: 4px 4px 4px 15px;
+}
+
+.actionsContainer {
+  display: none;
+}
+
+.actionButton {
+  padding: 2px;
+  outline: none;
+  border: none;
+  background-color: transparent;
+  position: relative;
+  flex: 0 0 20px;
+  height: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  position: relative;
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--vscode-toolbar-hoverBackground);
+  border-radius: 5px;
+  opacity: 0;
+  z-index: -1;
+}
+
+.actionButton:hover::before {
+  opacity: 1;
+}

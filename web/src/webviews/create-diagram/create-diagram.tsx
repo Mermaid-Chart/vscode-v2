@@ -11,7 +11,6 @@ const CreateDiagram = () => {
 
   const handleDiagramData = (data: string) => {
     const parsedData = JSON.parse(data);
-    console.log('got updated data', parsedData);
     setIframeData(parsedData.diagramImage);
     setEditorValue(parsedData.code);
   };

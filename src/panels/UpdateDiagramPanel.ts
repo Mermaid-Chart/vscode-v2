@@ -117,8 +117,10 @@ export class UpdateDiagramPanel {
 
     try {
       await this._mcAPI.updateDiagram(updatedDiagram);
-      await commands.executeCommand('package-diagrams.refresh');
+      // await commands.executeCommand('package-diagrams.refresh');
+      await commands.executeCommand('mermaidChart.refreshDiagramList');
       const document = await this._mcAPI.getDocument(this._diagram.documentID);
+      console.log('document', document);
       await this._panel.webview.postMessage({
         command: 'diagramData',
         data: JSON.stringify({
