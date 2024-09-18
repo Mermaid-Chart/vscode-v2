@@ -14,11 +14,11 @@ import { MCDocument } from '../mermaidAPI';
 import { getImageDataURL } from '../util';
 
 /**
- * This class manages the state and behavior of HelloWorld webview panels.
+ * This class manages the state and behavior of UpdateDiagram webview panels.
  *
  * It contains all the data and methods for:
  *
- * - Creating and rendering HelloWorld webview panels
+ * - Creating and rendering UpdateDiagram webview panels
  * - Properly cleaning up and disposing of webview resources when the panel is closed
  * - Setting the HTML (and by proxy CSS/JavaScript) content of the webview panel
  * - Setting message listeners so data can be passed between the webview and extension
@@ -29,6 +29,7 @@ export class UpdateDiagramPanel {
   private _disposables: Disposable[] = [];
   private _diagram: MCDocument;
   private _mcAPI: MermaidChartVSCode;
+  private _svgData: string = '';
 
   /**
    * The UpdateDiagramPanel class private constructor (called only from the render method).
@@ -41,6 +42,7 @@ export class UpdateDiagramPanel {
     extensionUri: Uri,
     diagram: MCDocument,
     mcAPI: MermaidChartVSCode,
+    svgData: string,
   ) {
     this._panel = panel;
 
@@ -58,6 +60,7 @@ export class UpdateDiagramPanel {
     this._setWebviewMessageListener(this._panel.webview);
     this._diagram = diagram;
     this._mcAPI = mcAPI;
+    this._svgData = svgData;
   }
 
   /**
@@ -70,6 +73,7 @@ export class UpdateDiagramPanel {
     extensionUri: Uri,
     diagram: MCDocument,
     mcAPI: MermaidChartVSCode,
+    svgData: string,
   ) {
     if (UpdateDiagramPanel.currentPanel) {
       // If the webview panel already exists reveal it
@@ -80,7 +84,7 @@ export class UpdateDiagramPanel {
         // Panel view type
         'updated-diagram',
         // Panel title
-        diagram.documentID,
+        `Update diagram: ${diagram.documentID}`,
         // The editor column the panel should be displayed in
         ViewColumn.One,
         // Extra panel configurations
@@ -100,6 +104,7 @@ export class UpdateDiagramPanel {
         extensionUri,
         diagram,
         mcAPI,
+        svgData,
       );
     }
   }
@@ -120,12 +125,12 @@ export class UpdateDiagramPanel {
       // await commands.executeCommand('package-diagrams.refresh');
       await commands.executeCommand('mermaidChart.refreshDiagramList');
       const document = await this._mcAPI.getDocument(this._diagram.documentID);
-      console.log('document', document);
+      const svgContent = await this._mcAPI.getRawDocument(document, 'dark');
       await this._panel.webview.postMessage({
         command: 'diagramData',
         data: JSON.stringify({
           code: document.code,
-          diagramImage: getImageDataURL(document.svgCodeDark!),
+          diagramImage: getImageDataURL(svgContent),
           title: document.title,
         }),
       });
@@ -219,7 +224,7 @@ export class UpdateDiagramPanel {
               data: JSON.stringify({
                 code: this._diagram.code,
                 title: this._diagram.title,
-                diagramImage: getImageDataURL(this._diagram.svgCodeDark!),
+                diagramImage: getImageDataURL(this._svgData),
               }),
             });
             break;

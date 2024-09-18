@@ -35,6 +35,12 @@ export class DiagramListView implements vscode.WebviewViewProvider {
         case 'getProjectsData':
           await this.getProjectsData();
           break;
+        case 'viewDiagram':
+          await vscode.commands.executeCommand(
+            'extension.viewMermaidChart',
+            documentID,
+          );
+          break;
         case 'deleteDiagram':
           await vscode.commands.executeCommand(
             'mermaidChart.deleteDiagram',

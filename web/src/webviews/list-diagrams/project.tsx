@@ -15,7 +15,7 @@ interface ProjectItemProps {
 const ProjectItem = ({ project }: ProjectItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const handleAction = (
-    action: 'deleteDiagram' | 'updateDiagram' | 'addDiagram',
+    action: 'viewDiagram' | 'deleteDiagram' | 'updateDiagram' | 'addDiagram',
     diagramID: string,
     title?: string,
   ) => {
@@ -41,35 +41,31 @@ const ProjectItem = ({ project }: ProjectItemProps) => {
       </div>
       {isExpanded && project.documents.length > 0 && (
         <ul className={styles.listContainer}>
-          {project.documents.map((document) => (
-            <li key={document.documentID} className={styles.listItem}>
-              <span className={styles.listItemTitle}>{document.title}</span>
+          {project.documents.map(({ documentID, title }) => (
+            <li
+              key={documentID}
+              className={styles.listItem}
+              onClick={() => handleAction('viewDiagram', documentID)}
+            >
+              <span className={styles.listItemTitle}>{title}</span>
               <div className={styles.actionsContainer}>
                 <button
                   className={styles.actionButton}
                   onClick={() =>
-                    handleAction(
-                      'deleteDiagram',
-                      document.documentID,
-                      document.title,
-                    )
+                    handleAction('deleteDiagram', documentID, title)
                   }
                 >
                   <img width={16} height={16} src={Trash} alt="*" />
                 </button>
                 <button
                   className={styles.actionButton}
-                  onClick={() =>
-                    handleAction('updateDiagram', document.documentID)
-                  }
+                  onClick={() => handleAction('updateDiagram', documentID)}
                 >
                   <img width={16} height={16} src={Edit} alt="*" />
                 </button>
                 <button
                   className={styles.actionButton}
-                  onClick={() =>
-                    handleAction('addDiagram', document.documentID)
-                  }
+                  onClick={() => handleAction('addDiagram', documentID)}
                 >
                   <img width={16} height={16} src={Add} alt="*" />
                 </button>

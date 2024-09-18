@@ -84,7 +84,7 @@ export class CreateDiagramPanel {
         // Panel view type
         'new-diagram',
         // Panel title
-        diagram.documentID,
+        `Create diagram: ${diagram.documentID}`,
         // The editor column the panel should be displayed in
         ViewColumn.One,
         // Extra panel configurations

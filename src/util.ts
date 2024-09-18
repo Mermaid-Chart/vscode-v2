@@ -258,7 +258,13 @@ export async function updateMermaidChart(
       async () => {
         try {
           const diagram = await mcAPI.getDocument(uuid);
-          UpdateDiagramPanel.render(context.extensionUri, diagram, mcAPI);
+          const svgData = await mcAPI.getRawDocument(diagram, 'dark');
+          UpdateDiagramPanel.render(
+            context.extensionUri,
+            diagram,
+            mcAPI,
+            svgData,
+          );
         } catch (error) {
           throw new Error('Failed to create diagram');
         }
