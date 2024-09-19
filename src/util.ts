@@ -259,7 +259,13 @@ export async function updateMermaidChart(
         try {
           const diagram = await mcAPI.getDocument(uuid);
           const svgData = await mcAPI.getRawDocument(diagram, 'dark');
-          UpdateDiagramPanel.render(
+          // UpdateDiagramPanel.render(
+          //   context.extensionUri,
+          //   diagram,
+          //   mcAPI,
+          //   svgData,
+          // );
+          UpdateDiagramPanel.createOrShow(
             context.extensionUri,
             diagram,
             mcAPI,

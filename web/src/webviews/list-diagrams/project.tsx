@@ -12,13 +12,22 @@ interface ProjectItemProps {
   project: Project;
 }
 
+interface ActionDataTypes {
+  action: 'viewDiagram' | 'deleteDiagram' | 'updateDiagram' | 'addDiagram';
+  diagramID: string;
+  title?: string;
+  event: React.MouseEvent;
+}
+
 const ProjectItem = ({ project }: ProjectItemProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const handleAction = (
-    action: 'viewDiagram' | 'deleteDiagram' | 'updateDiagram' | 'addDiagram',
-    diagramID: string,
-    title?: string,
-  ) => {
+  const handleAction = ({
+    action,
+    diagramID,
+    title,
+    event,
+  }: ActionDataTypes) => {
+    event.stopPropagation();
     vscode.postMessage({
       command: action,
       data: diagramID,
@@ -45,27 +54,52 @@ const ProjectItem = ({ project }: ProjectItemProps) => {
             <li
               key={documentID}
               className={styles.listItem}
-              onClick={() => handleAction('viewDiagram', documentID)}
+              onClick={(event) =>
+                handleAction({
+                  action: 'viewDiagram',
+                  diagramID: documentID,
+                  event,
+                })
+              }
             >
               <span className={styles.listItemTitle}>{title}</span>
               <div className={styles.actionsContainer}>
                 <button
                   className={styles.actionButton}
-                  onClick={() =>
-                    handleAction('deleteDiagram', documentID, title)
+                  onClick={(event) =>
+                    handleAction({
+                      action: 'deleteDiagram',
+                      diagramID: documentID,
+                      title,
+                      event,
+                    })
                   }
                 >
                   <img width={16} height={16} src={Trash} alt="*" />
                 </button>
                 <button
                   className={styles.actionButton}
-                  onClick={() => handleAction('updateDiagram', documentID)}
+                  onClick={(event) =>
+                    handleAction({
+                      action: 'updateDiagram',
+                      diagramID: documentID,
+                      title,
+                      event,
+                    })
+                  }
                 >
                   <img width={16} height={16} src={Edit} alt="*" />
                 </button>
                 <button
                   className={styles.actionButton}
-                  onClick={() => handleAction('addDiagram', documentID)}
+                  onClick={(event) =>
+                    handleAction({
+                      action: 'addDiagram',
+                      diagramID: documentID,
+                      title,
+                      event,
+                    })
+                  }
                 >
                   <img width={16} height={16} src={Add} alt="*" />
                 </button>

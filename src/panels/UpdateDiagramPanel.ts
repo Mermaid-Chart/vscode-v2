@@ -24,19 +24,14 @@ import { getImageDataURL } from '../util';
  * - Setting message listeners so data can be passed between the webview and extension
  */
 export class UpdateDiagramPanel {
-  public static currentPanel: UpdateDiagramPanel | undefined;
+  public static readonly viewType = 'update-diagram';
   private readonly _panel: WebviewPanel;
   private _disposables: Disposable[] = [];
   private _diagram: MCDocument;
   private _mcAPI: MermaidChartVSCode;
   private _svgData: string = '';
+  private static panels: Map<string, UpdateDiagramPanel> = new Map();
 
-  /**
-   * The UpdateDiagramPanel class private constructor (called only from the render method).
-   *
-   * @param panel A reference to the webview panel
-   * @param extensionUri The URI of the directory containing the extension
-   */
   private constructor(
     panel: WebviewPanel,
     extensionUri: Uri,
@@ -63,50 +58,48 @@ export class UpdateDiagramPanel {
     this._svgData = svgData;
   }
 
-  /**
-   * Renders the current webview panel if it exists otherwise a new webview panel
-   * will be created and displayed.
-   *
-   * @param extensionUri The URI of the directory containing the extension.
-   */
-  public static render(
+  public static createOrShow(
     extensionUri: Uri,
     diagram: MCDocument,
     mcAPI: MermaidChartVSCode,
     svgData: string,
   ) {
-    if (UpdateDiagramPanel.currentPanel) {
-      // If the webview panel already exists reveal it
-      UpdateDiagramPanel.currentPanel._panel.reveal(ViewColumn.One);
-    } else {
-      // If a webview panel does not already exist create and show a new one
-      const panel = window.createWebviewPanel(
-        // Panel view type
-        'updated-diagram',
-        // Panel title
-        `Update diagram: ${diagram.documentID}`,
-        // The editor column the panel should be displayed in
-        ViewColumn.One,
-        // Extra panel configurations
-        {
-          // Enable JavaScript in the webview
-          enableScripts: true,
-          // Restrict the webview to only load resources from the `out` and `webview-ui/build` directories
-          localResourceRoots: [
-            Uri.joinPath(extensionUri, 'out'),
-            Uri.joinPath(extensionUri, 'web/dist/update-diagram'),
-          ],
-        },
-      );
+    const column = window.activeTextEditor
+      ? window.activeTextEditor.viewColumn
+      : undefined;
+    const id = diagram.documentID;
 
-      UpdateDiagramPanel.currentPanel = new UpdateDiagramPanel(
-        panel,
-        extensionUri,
-        diagram,
-        mcAPI,
-        svgData,
-      );
+    // If we already have a panel, show it.
+    if (UpdateDiagramPanel.panels.has(id)) {
+      const existingPanel = UpdateDiagramPanel.panels.get(id)!;
+      existingPanel._panel.reveal(column);
+      return;
     }
+
+    // Otherwise, create a new panel.
+    const panel = window.createWebviewPanel(
+      UpdateDiagramPanel.viewType,
+      `Update diagram: ${id}`,
+      column || ViewColumn.One,
+      {
+        // Enable javascript in the webview
+        enableScripts: true,
+        // And restrict the webview to only loading content from our extension's `media` directory.
+        localResourceRoots: [
+          Uri.joinPath(extensionUri, 'out'),
+          Uri.joinPath(extensionUri, 'web/dist/update-diagram'),
+        ],
+      },
+    );
+
+    const newPanel = new UpdateDiagramPanel(
+      panel,
+      extensionUri,
+      diagram,
+      mcAPI,
+      svgData,
+    );
+    UpdateDiagramPanel.panels.set(id, newPanel);
   }
 
   private async updateDiagram(code: string, title?: string) {
@@ -141,20 +134,17 @@ export class UpdateDiagramPanel {
     }
   }
 
-  /**
-   * Cleans up and disposes of webview resources when the webview panel is closed.
-   */
   public dispose() {
-    UpdateDiagramPanel.currentPanel = undefined;
+    UpdateDiagramPanel.panels.delete(this._diagram.documentID);
 
-    // Dispose of the current webview panel
+    // Dispose of the panel
     this._panel.dispose();
 
-    // Dispose of all disposables (i.e. commands) for the current webview panel
+    // Dispose of all disposables
     while (this._disposables.length) {
-      const disposable = this._disposables.pop();
-      if (disposable) {
-        disposable.dispose();
+      const x = this._disposables.pop();
+      if (x) {
+        x.dispose();
       }
     }
   }
@@ -231,8 +221,6 @@ export class UpdateDiagramPanel {
           case 'updateDiagram':
             await this.updateDiagram(message.data.code, message.data.title);
             break;
-          // Add more switch case statements here as more webview message commands
-          // are created within the webview context (i.e. inside media/main.js)
         }
       },
       undefined,
