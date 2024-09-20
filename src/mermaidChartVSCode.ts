@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import { MermaidChart } from './mermaidAPI';
 import { MermaidChartAuthenticationProvider } from './mermaidChartAuthenticationProvider';
+import { getBaseUrl, getClientID } from './utilities/helpers';
 
 export class MermaidChartVSCode extends MermaidChart {
   constructor() {
     const baseURL = getBaseUrl();
-    const clientID = `469e30a6-2602-4022-aff8-2ab36842dc57`;
+    const clientID = getClientID();
     super({
       baseURL,
       clientID,
@@ -68,17 +69,17 @@ export class MermaidChartVSCode extends MermaidChart {
   }
 }
 
-const defaultBaseURL = 'https://www.mermaidchart.com';
+// const defaultBaseURL = 'https://www.mermaidchart.com';
 
-export function getBaseUrl(): string | undefined {
-  const config = vscode.workspace.getConfiguration('mermaidChart');
-  const baseURL = config.get<string>('baseUrl');
+// export function getBaseUrl(): string | undefined {
+//   const config = vscode.workspace.getConfiguration('mermaidChart');
+//   const baseURL = config.get<string>('baseUrl');
 
-  if (baseURL) {
-    return baseURL;
-  }
+//   if (baseURL) {
+//     return baseURL;
+//   }
 
-  // If baseURL was not set, set it to default
-  config.update('baseUrl', defaultBaseURL, true);
-  return defaultBaseURL;
-}
+//   // If baseURL was not set, set it to default
+//   config.update('baseUrl', defaultBaseURL, true);
+//   return defaultBaseURL;
+// }

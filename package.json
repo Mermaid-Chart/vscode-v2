@@ -73,6 +73,22 @@
           "name": "Syntax Help"
         }
       ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Mermaid Chart Extension",
+      "properties": {
+        "mermaidChart.baseUrl": {
+          "type": "string",
+          "default": "https://www.mermaidchart.com",
+          "description": "The base URL for the Mermaid Chart API."
+        },
+        "mermaidChart.clientId": {
+          "type": "string",
+          "default": "469e30a6-2602-4022-aff8-2ab36842dc57",
+          "description": "The client ID for accessing the Mermaid Chart API."
+        }
+      }
     }
   },
   "scripts": {
