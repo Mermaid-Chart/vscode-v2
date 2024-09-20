@@ -85,6 +85,9 @@ export class DiagramListView implements vscode.WebviewViewProvider {
   }
 
   public async refresh() {
+    await this?._view?.webview.postMessage({
+      command: 'isLoading',
+    });
     await this.getProjectsData();
   }
 

@@ -4,17 +4,22 @@ import { vscode } from '../../utilities/vscode';
 import styles from './list-diagrams.module.css';
 import { Project } from './types';
 import ProjectItem from './project';
+import ProgressBar from './progress-bar';
 
 const ListDiagrams = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const message = event.data;
 
       switch (message.command) {
+        case 'isLoading':
+          setIsLoading(true);
+          break;
         case 'projectsData':
-          console.log(message.data);
           setProjects(message.data);
+          setIsLoading(false);
           break;
         default:
           console.warn(`Unhandled message: ${message.command}`);
@@ -37,6 +42,7 @@ const ListDiagrams = () => {
 
   return (
     <>
+      <ProgressBar loading={isLoading} />
       <div className={styles.buttonContainer}>
         <VSCodeButton
           style={{ width: '100%' }}
