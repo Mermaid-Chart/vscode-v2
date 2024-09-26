@@ -64,8 +64,8 @@ export class MermaidChartAuthenticationProvider
    * @returns
    */
   public async getSessions(): Promise<AuthenticationSession[]> {
-    // return [];
     const allSessions = await this.context.secrets.get(this.sessionsKey);
+    console.log('allSessions', allSessions);
 
     if (allSessions) {
       return JSON.parse(allSessions) as AuthenticationSession[];
@@ -83,6 +83,7 @@ export class MermaidChartAuthenticationProvider
     try {
       await this.login(scopes);
       const token = await this.mcAPI.getAccessToken();
+      console.log('token', token);
       if (!token) {
         throw new Error(`MermaidChart login failure`);
       }

@@ -189,7 +189,7 @@ export class MermaidChart {
     this.accessToken = accessToken;
   }
 
-  public async resetAccessToken(): Promise<void> {
+  public resetAccessToken() {
     this.accessToken = undefined;
     this.axios.defaults.headers.common['Authorization'] = `Bearer none`;
   }
