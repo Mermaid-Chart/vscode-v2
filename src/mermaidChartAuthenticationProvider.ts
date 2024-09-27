@@ -67,16 +67,9 @@ export class MermaidChartAuthenticationProvider
     const allSessions = await this.context.secrets.get(this.sessionsKey);
     console.log('allSessions', allSessions);
 
-    if (allSessions) {
-      const currentSession: AuthenticationSession = JSON.parse(allSessions)[0];
-      if (currentSession?.account?.label === null) {
-        await this.removeSession(currentSession.id);
-        return [];
-      }
-      return JSON.parse(allSessions) as AuthenticationSession[];
-    }
+    if (!allSessions) return [];
 
-    return [];
+    return JSON.parse(allSessions);
   }
 
   /**
@@ -88,7 +81,6 @@ export class MermaidChartAuthenticationProvider
     try {
       await this.login(scopes);
       const token = await this.mcAPI.getAccessToken();
-      console.log('token', token);
       if (!token) {
         throw new Error(`MermaidChart login failure`);
       }

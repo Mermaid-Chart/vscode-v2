@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { MermaidChart } from './mermaidAPI';
 import { MermaidChartAuthenticationProvider } from './mermaidChartAuthenticationProvider';
 import { getBaseUrl, getClientID } from './utilities/helpers';
+import { AxiosError } from 'axios';
 
 export class MermaidChartVSCode extends MermaidChart {
   constructor() {
@@ -61,6 +62,24 @@ export class MermaidChartVSCode extends MermaidChart {
       },
     );
     this.setAccessToken(session.accessToken);
+    await this.checkAuthorizationStatus();
+  }
+
+  private async checkAuthorizationStatus() {
+    try {
+      await this.getUser();
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        this.resetAccessToken();
+        await vscode.authentication.getSession(
+          MermaidChartAuthenticationProvider.id,
+          [],
+          {
+            forceNewSession: true,
+          },
+        );
+      }
+    }
   }
 
   private async refreshBaseURL() {
