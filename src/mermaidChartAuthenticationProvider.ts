@@ -68,6 +68,11 @@ export class MermaidChartAuthenticationProvider
     console.log('allSessions', allSessions);
 
     if (allSessions) {
+      const currentSession: AuthenticationSession = JSON.parse(allSessions)[0];
+      if (!currentSession.account.label) {
+        await this.removeSession(currentSession.id);
+        return [];
+      }
       return JSON.parse(allSessions) as AuthenticationSession[];
     }
 
