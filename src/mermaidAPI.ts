@@ -208,6 +208,7 @@ export class MermaidChart {
 
   public async getUser(): Promise<MCUser> {
     const user = await this.axios.get<MCUser>(this.URLS.rest.users.self);
+    console.log('user fullName', user.data.fullName);
     return user.data;
   }
 
