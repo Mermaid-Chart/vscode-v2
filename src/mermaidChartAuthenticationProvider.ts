@@ -53,8 +53,7 @@ export class MermaidChartAuthenticationProvider
 
   get redirectUri() {
     const publisher = this.context.extension.packageJSON.publisher;
-    const name =
-      'vscode-mermaid-chart' || this.context.extension.packageJSON.name;
+    const name = this.context.extension.packageJSON.name;
     return `${env.uriScheme}://${publisher}.${name}`;
   }
 

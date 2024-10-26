@@ -216,7 +216,6 @@ export async function createMermaidChart(
         if (newDiagram?.documentID) {
           const diagram = await mcAPI.getDocument(newDiagram.documentID);
           const svgContent = await mcAPI.getRawDocument(newDiagram, 'dark');
-          console.log('svgContent', svgContent);
 
           CreateDiagramPanel.render(
             context.extensionUri,
@@ -296,16 +295,16 @@ export async function editMermaidChart(
   vscode.env.openExternal(vscode.Uri.parse(editUrl));
 }
 
-export async function insertMermaidChartToken(
-  document: MermaidChartToken,
-  provider: MermaidChartProvider,
-) {
+export async function insertMermaidChartToken(uuid: string) {
   // If a project is selected from tree-view, no token shall be inserted
-  const uuid = document.uuid;
-  const itemType = provider.getItemTypeFromUuid(uuid);
-  if (itemType !== ITEM_TYPE_DOCUMENT) {
-    return;
-  }
+  // const uuid = document.uuid;
+  // const itemType = provider.getItemTypeFromUuid(uuid);
+
+  // if (itemType !== ITEM_TYPE_DOCUMENT) {
+  //   return;
+  // }
+
+  if (!uuid) return;
 
   const editor = vscode.window.activeTextEditor;
   if (!editor) {

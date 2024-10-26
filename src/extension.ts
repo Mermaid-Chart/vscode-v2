@@ -154,10 +154,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      'package-diagrams.insertUuidIntoEditor',
-      (document) => {
-        return insertMermaidChartToken(document, mermaidChartProvider);
-      },
+      'mermaidChart.addDiagram',
+      // 'package-diagrams.insertUuidIntoEditor',
+      (uuid) => insertMermaidChartToken(uuid),
     ),
   );
 
