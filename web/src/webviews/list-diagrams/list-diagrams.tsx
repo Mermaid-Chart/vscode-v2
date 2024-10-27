@@ -38,6 +38,7 @@ const ListDiagrams = () => {
     vscode.postMessage({
       command: 'getProjectsData',
     });
+    setIsLoading(true);
   }, []);
 
   return (
