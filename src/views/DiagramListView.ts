@@ -60,6 +60,12 @@ export class DiagramListView implements vscode.WebviewViewProvider {
             documentID,
           );
           break;
+        case 'cloneDiagram':
+          await vscode.commands.executeCommand(
+            'mermaidChart.cloneDiagram',
+            data.data,
+          );
+          break;
         case 'createNewDiagram':
           await vscode.commands.executeCommand('extension.createMermaidChart');
           break;

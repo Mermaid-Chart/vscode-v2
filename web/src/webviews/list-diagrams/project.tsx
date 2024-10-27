@@ -5,6 +5,7 @@ import ChevronDown from '../../assets/icons/dark/chevron-down.svg';
 import Trash from '../../assets/icons/dark/trash.svg';
 import Add from '../../assets/icons/dark/add.svg';
 import Edit from '../../assets/icons/dark/edit.svg';
+import Files from '../../assets/icons/dark/files.svg';
 import type { Project } from './types';
 import { vscode } from '../../utilities/vscode';
 
@@ -13,7 +14,12 @@ interface ProjectItemProps {
 }
 
 interface ActionDataTypes {
-  action: 'viewDiagram' | 'deleteDiagram' | 'updateDiagram' | 'addDiagram';
+  action:
+    | 'viewDiagram'
+    | 'deleteDiagram'
+    | 'updateDiagram'
+    | 'addDiagram'
+    | 'cloneDiagram';
   diagramID: string;
   title?: string;
   event: React.MouseEvent;
@@ -50,7 +56,7 @@ const ProjectItem = ({ project }: ProjectItemProps) => {
       </div>
       {isExpanded && project.documents.length > 0 && (
         <ul className={styles.listContainer}>
-          {project.documents.map(({ documentID, title }) => (
+          {project.documents.map(({ documentID, title, ...rest }) => (
             <li
               key={documentID}
               className={styles.listItem}
@@ -102,6 +108,23 @@ const ProjectItem = ({ project }: ProjectItemProps) => {
                   }
                 >
                   <img width={16} height={16} src={Add} alt="*" />
+                </button>
+                <button
+                  className={styles.actionButton}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    vscode.postMessage({
+                      command: 'cloneDiagram',
+                      data: {
+                        diagramID: documentID,
+                        title,
+                        ...rest,
+                      },
+                      title,
+                    });
+                  }}
+                >
+                  <img width={16} height={16} src={Files} alt="*" />
                 </button>
               </div>
             </li>

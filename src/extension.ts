@@ -1,8 +1,9 @@
 import * as vscode from 'vscode';
-import { MermaidChartProvider, MCTreeItem } from './mermaidChartProvider';
+import { MermaidChartProvider } from './mermaidChartProvider';
 import { MermaidChartVSCode } from './mermaidChartVSCode';
 import {
   applyMermaidChartTokenHighlighting,
+  cloneMermaidChart,
   createMermaidChart,
   editMermaidChart,
   findComments,
@@ -110,6 +111,13 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'mermaidChart.editDiagram',
       async (uuid) => await updateMermaidChart(mcAPI, context, uuid),
+    ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'mermaidChart.cloneDiagram',
+      async (document) => await cloneMermaidChart(mcAPI, document),
     ),
   );
 

@@ -2,12 +2,10 @@ import { Disposable, Event, EventEmitter } from 'vscode';
 import { createHash } from 'crypto';
 import * as vscode from 'vscode';
 import { MermaidChartVSCode } from './mermaidChartVSCode';
-import {
-  MermaidChartProvider,
-  ITEM_TYPE_DOCUMENT,
-} from './mermaidChartProvider';
+import { MermaidChartProvider } from './mermaidChartProvider';
 import { CreateDiagramPanel } from './panels/CreateDiagramPanel';
 import { UpdateDiagramPanel } from './panels/UpdateDiagramPanel';
+import { MCDocument } from './mermaidAPI';
 
 export interface PromiseAdapter<T, U> {
   (
@@ -284,6 +282,52 @@ export async function updateMermaidChart(
   }
 }
 
+export async function cloneMermaidChart(
+  mcAPI: MermaidChartVSCode,
+  document: MCDocument,
+) {
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: 'Cloning diagram...',
+        cancellable: false,
+      },
+      async () => {
+        const newDiagram = await mcAPI.createDiagram(document.projectID);
+
+        if (!newDiagram) return;
+
+        const updatedDiagram: MCDocument = {
+          id: newDiagram.id,
+          documentID: newDiagram.documentID,
+          projectID: newDiagram.projectID,
+          major: newDiagram.major,
+          minor: newDiagram.minor,
+          title: `${document.title} (Clone)`,
+          code: document.code,
+        };
+
+        try {
+          await mcAPI.updateDiagram(updatedDiagram);
+          await await vscode.commands.executeCommand(
+            'mermaidChart.refreshDiagramList',
+          );
+        } catch (error) {
+          console.log(error);
+          vscode.window.showErrorMessage('Failed to clone diagram');
+        }
+      },
+    );
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `Failed to clone Mermaid Chart diagram: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`,
+    );
+  }
+}
+
 export async function editMermaidChart(
   mcAPI: MermaidChartVSCode,
   uuid: string,
@@ -307,6 +351,7 @@ export async function insertMermaidChartToken(uuid: string) {
   if (!uuid) return;
 
   const editor = vscode.window.activeTextEditor;
+
   if (!editor) {
     return;
   }
