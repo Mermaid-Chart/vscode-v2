@@ -290,7 +290,7 @@ export async function cloneMermaidChart(
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        title: 'Cloning diagram...',
+        title: 'Copying diagram...',
         cancellable: false,
       },
       async () => {
@@ -304,7 +304,7 @@ export async function cloneMermaidChart(
           projectID: newDiagram.projectID,
           major: newDiagram.major,
           minor: newDiagram.minor,
-          title: `${document.title} (Clone)`,
+          title: `${document.title} (Copy)`,
           code: document.code,
         };
 
